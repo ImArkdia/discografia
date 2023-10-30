@@ -27,9 +27,9 @@
             </tr>";
     }
 
-    echo "<div id='banyadir'>
+    echo "</table><br><br>
         <a href='cancionnueva.php?cod=".$_GET['cod']."&tit=".$_GET['tit']."'>Añadir canción</a>
-        <a href='borrardisco.php?cod=".$_GET['cod']."&tit=".$_GET['tit']."'>Borrar album</a></div>";
+        <a href='borrardisco.php?cod=".$_GET['cod']."&tit=".$_GET['tit']."'>Borrar album</a>";
     echo "</html>";
 ?>
 
