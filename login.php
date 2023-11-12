@@ -6,24 +6,22 @@
         echo 'Falló la conexión: '. $e->getMessage();
     }
 
+    session_start();
+
     $info = "";
-    $cookieOk = false;
+    $registroOk = "";
 
-    if(isset($_POST["no"])){
-
+    if(isset($_GET["registrado"])){
+        $registroOk = "Usuario registrado correctamente.";
     }
 
-    if(isset($_COOKIE["usuario"])){
-        $cookieOk = true;
+    if(isset($_GET["userError"]) && $_GET["userError"] == true){
+        $info = "El usuario o contraseña proporcionados no son válidos";
+    }else if(isset($_GET["userError"]) && $_GET["userError"] == false){
+        $info = "No se ha encontrado el usuario proporcionado.";
     }
 
-    if(isset($_POST["si"])){
-        echo "<p>Acceso correcto<p>";
-    }else if(isset($_POST["no"])){ 
-        setcookie("usuario","", time()-3600);
-        header("Location: ./login.php");
-        exit();
-    }else if(isset($_POST["user"]) && isset( $_POST["password"]) && $cookieOk == false){
+    if(isset($_POST["user"]) && isset( $_POST["password"])){
         $prepared = $disco->prepare("SELECT * FROM tabla_usuarios WHERE usuario=:usuario");
         $prepared->execute(array(":usuario" => $_POST["user"]));
 
@@ -31,36 +29,18 @@
             $pass = $result["password"];
 
             if(password_verify($_POST["password"], $pass)) {
-                setcookie("usuario", $_POST["user"], time() + 3600);
-                header("Location: ./login.php");
+                $_SESSION["token"] = $pass;
+                $_SESSION["user"] = $_POST["user"];
+                header("Location: ./index.php");
                 exit();
             }else{
-                $info = "El usuario o contraseña proporcionados no son válidos";
+                header("Location: ./login.php?userError=true");
+                exit();
             }
         }else{
-            $info = "No se ha encontrado el usuario proporcionado.";
+            header("Location: ./login.php?userError=false");
+            exit();
         }
-
-        echo "
-        <h1>Login</h1>
-        <form action='#' method='POST'>
-            <label for='user'>Usuario: </label>
-            <input type='text' name='user' id='user'><br>
-            <label for='password'>Contraseña</label>
-            <input type='password' name='password' id='password'><br><br>
-            <input type='submit' name='enviar' id='enviar'><br>
-            ". $info ."
-        </form>
-        ";
-    }else if($cookieOk == true){
-        echo "
-        <h1>Login</h1>
-        <p>Ha iniciado sesión como ". $_COOKIE['usuario'] .", desea continuar?</p>
-        <form action='#' method='POST'>
-            <input type='submit' id='si' name='si' value='Si'>
-            <input type='submit' id='no' name='no' value='No'>
-        </form>
-        ";
     }else{
         echo "
         <h1>Login</h1>
@@ -69,9 +49,11 @@
             <input type='text' name='user' id='user'><br>
             <label for='password'>Contraseña</label>
             <input type='password' name='password' id='password'><br><br>
-            <input type='submit' name='enviar' id='enviar'><br>
+            <input type='submit' name='enviar' id='enviar'><br><br>
             ". $info ."
+            ". $registroOk ."
         </form>
+        <div><a href='./registro.php'>Click para Registrarte</a></div>
         ";
     }
 ?>

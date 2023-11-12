@@ -1,4 +1,26 @@
 <?php
+
+    session_start();
+
+    $iniciadoSesion = false;
+
+    if(isset($_SESSION["token"]) && isset($_SESSION["user"])){
+        $prepared = $disco->prepare("SELECT * FROM tabla_usuarios WHERE usuario=:usuario AND password=:password");
+        $prepared->execute(array(":usuario" => $_SESSION["user"], ":password" => $_SESSION["token"]));
+
+        if(($result = $prepared->fetch(PDO::FETCH_ASSOC)) != null) {
+            $iniciadoSesion = true;
+        }else{
+            header("Location: ./login.php");
+            exit();
+        }
+    }
+
+    echo '<!DOCTYPE HTML>
+        <html>
+        <link rel="stylesheet" href="./css/style.css">
+    ';
+
     try {
         $disco = new PDO('mysql:host=localhost;dbname=discografia', 'disco', 'disco');
     } catch (PDOException $e) {

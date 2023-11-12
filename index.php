@@ -1,8 +1,15 @@
 
 <?php
-    echo '<html>
-        <link rel="stylesheet" href="./css/style.css">
-    ';
+
+    session_start();
+
+    if(isset($_GET["cerrarSesion"])){
+        session_destroy();
+        header("Location: ./login.php");
+        exit();
+    }
+
+    $iniciadoSesion = false;
 
     $disco;
     try {
@@ -10,6 +17,29 @@
     } catch (PDOException $e) {
         echo 'Falló la conexión: '. $e->getMessage();
     }
+
+    if(isset($_SESSION["token"]) && isset($_SESSION["user"])){
+        $prepared = $disco->prepare("SELECT * FROM tabla_usuarios WHERE usuario=:usuario AND password=:password");
+        $prepared->execute(array(":usuario" => $_SESSION["user"], ":password" => $_SESSION["token"]));
+
+        if(($result = $prepared->fetch(PDO::FETCH_ASSOC)) != null) {
+            $iniciadoSesion = true;
+        }else{
+            header("Location: ./login.php");
+            exit();
+        }
+    }else{
+        header("Location: ./login.php");
+        exit();
+    }
+
+    echo '<!DOCTYPE HTML>
+        <html>
+        <link rel="stylesheet" href="./css/style.css">
+    ';
+
+    echo '<div id="botoncerrar"><a href="./index.php?cerrarSesion=true">Cerrar Sesión</a></div>';
+    echo '<div id="cuerpo">';
     
     $actualizado = "";
     $borrardisco = "";
@@ -50,9 +80,8 @@
 
     echo "</table><br><br><a href='./disconuevo.php'>Añadir nuevo disco</a>
          <a href='./canciones.php'>Buscar canciones</a>
-        </html>";
+        </div><body></html>";
 ?>
-
 
 
 
